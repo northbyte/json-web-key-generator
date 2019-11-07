@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import com.nimbusds.jose.jwk.*;
 import org.apache.commons.cli.*;
@@ -163,7 +164,7 @@ public class Launcher {
 
     private static String generateKid(KeyUse keyUse) {
         String prefix = keyUse == null ? "" : keyUse.identifier();
-        return prefix + (System.currentTimeMillis() / 1000);
+        return prefix + UUID.randomUUID().toString();
     }
 
     private static void writeKeyToFile(boolean keySet, String outFile, JWK jwk, Gson gson) throws IOException,
