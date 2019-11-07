@@ -31,13 +31,11 @@ public class OctetSequenceKeyMaker {
         Base64URL encoded = Base64URL.encode(bytes);
 
         // make a key
-        OctetSequenceKey octetSequenceKey = new OctetSequenceKey.Builder(encoded)
+        return new OctetSequenceKey.Builder(encoded)
                 .keyID(kid)
                 .algorithm(alg)
                 .keyUse(use)
                 .build();
-
-        return octetSequenceKey;
     }
 
 }

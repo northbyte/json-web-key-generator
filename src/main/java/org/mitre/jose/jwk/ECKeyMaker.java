@@ -12,8 +12,8 @@ import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
 
 import com.nimbusds.jose.Algorithm;
+import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
-import com.nimbusds.jose.jwk.ECKey.Curve;
 import com.nimbusds.jose.jwk.KeyUse;
 
 /**
@@ -41,23 +41,16 @@ public class ECKeyMaker {
             ECPublicKey pub = (ECPublicKey) kp.getPublic();
             ECPrivateKey priv = (ECPrivateKey) kp.getPrivate();
 
-            ECKey ecKey = new ECKey.Builder(crv, pub)
+            return new ECKey.Builder(crv, pub)
                     .privateKey(priv)
                     .keyID(kid)
                     .algorithm(keyAlg)
                     .keyUse(keyUse)
                     .build();
-
-            return ecKey;
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-            return null;
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
+        } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException e) {
             e.printStackTrace();
             return null;
         }
-
     }
 
 }

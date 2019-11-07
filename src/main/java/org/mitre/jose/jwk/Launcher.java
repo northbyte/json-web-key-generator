@@ -4,16 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
+import com.nimbusds.jose.jwk.*;
+import org.apache.commons.cli.*;
 import org.apache.commons.io.IOUtils;
 
 import com.google.common.base.Strings;
@@ -23,11 +20,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.jwk.ECKey.Curve;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.KeyType;
-import com.nimbusds.jose.jwk.KeyUse;
 
 /**
  * Small Helper App to generate Json Web Keys
@@ -54,7 +46,7 @@ public class Launcher {
         options.addOption("o", true, "Write output to file (will append to existing KeySet if -S is used), No Display of Key "
 				+ "Material");
 
-        CommandLineParser parser = new PosixParser();
+        CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
 
@@ -179,21 +171,18 @@ public class Launcher {
         JsonElement json;
         File output = new File(outFile);
         if (keySet) {
-            List<JWK> existingKeys = output.exists() ? JWKSet.load(output).getKeys() : Collections.<JWK>emptyList();
-            List<JWK> jwkList = new ArrayList<JWK>(existingKeys);
+            List<JWK> existingKeys = output.exists() ? JWKSet.load(output).getKeys() : Collections.emptyList();
+            List<JWK> jwkList = new ArrayList<>(existingKeys);
             jwkList.add(jwk);
             JWKSet jwkSet = new JWKSet(jwkList);
             json = new JsonParser().parse(jwkSet.toJSONObject(false).toJSONString());
         } else {
             json = new JsonParser().parse(jwk.toJSONString());
         }
-        OutputStream os = null;
-        try {
-            os = new FileOutputStream(output);
-            IOUtils.write(gson.toJson(json), os);
-        } finally {
-            IOUtils.closeQuietly(os);
-        }
+
+        try (OutputStream os = new FileOutputStream(output)) {
+            IOUtils.write(gson.toJson(json), os, Charset.defaultCharset());
+        } catch (Exception ignored) {}
     }
 
     private static void printKey(boolean keySet, JWK jwk, Gson gson) {
