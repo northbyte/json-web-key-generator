@@ -34,15 +34,15 @@ public class Launcher {
         options = new Options();
 
         options.addOption("t", true, "Key Type, one of: " + KeyType.RSA.getValue() + ", " + KeyType.OCT.getValue() + ", " +
-                KeyType.EC.getValue());
+                KeyType.EC.getValue() + ", " + KeyType.OKP.getValue());
         options.addOption("s", true, "Key Size in bits, required for RSA and oct key types. Must be an integer divisible by 8");
         options.addOption("u", true, "Usage, one of: enc, sig (optional)");
         options.addOption("a", true, "Algorithm (optional)");
         options.addOption("i", true, "Key ID (optional), one will be generated if not defined");
         options.addOption("I", false, "Don't generate a Key ID if none defined");
         options.addOption("p", false, "Display public key separately");
-        options.addOption("c", true, "Key Curve, required for EC key type. Must be one of " + Curve.P_256 + ", " + Curve.P_384
-				+ ", " + Curve.P_521);
+        options.addOption("c", true, "Key Curve, required for EC or EdDSA key types. Must be one of " + Curve.P_256 + ", " + Curve.P_384
+				+ ", " + Curve.P_521 + " or for EdDSA " + Curve.Ed25519 + ", " + Curve.X25519);
         options.addOption("S", false, "Wrap the generated key in a KeySet");
         options.addOption("o", true, "Write output to file (will append to existing KeySet if -S is used), No Display of Key "
 				+ "Material");
@@ -122,6 +122,12 @@ public class Launcher {
                 }
                 Curve keyCurve = Curve.parse(crv);
                 jwk = ECKeyMaker.make(keyCurve, keyUse, keyAlg, kid);
+            } else if (keyType.equals(KeyType.OKP)) {
+                if (Strings.isNullOrEmpty(crv)) {
+                    printUsageAndExit("Curve is required for key type " + keyType);
+                }
+                Curve keyCurve = Curve.parse(crv);
+                jwk = OctetKeyPairKeyMaker.make(keyCurve, keyUse, kid);
             } else {
                 printUsageAndExit("Unknown key type: " + keyType);
             }
